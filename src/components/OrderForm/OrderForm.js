@@ -1,12 +1,39 @@
 import { useState } from "react";
+import { postOrders } from "../../apiCalls";
 
-function OrderForm(props) {
+function OrderForm({addOrder}) {
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState([]);
 
+  
+
   function handleSubmit(e) {
     e.preventDefault();
+    const newOrder = {
+      name,
+      ingredients,
+    }
+    newOrder.name && 
+      newOrder.ingredients.length && 
+      postOrders(newOrder)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(res.status)
+          }
+          addOrder(newOrder)
+          return res.json()
+        })
+        .catch(err => console.log(err))
     clearInputs();
+  }
+
+  function addIngredient(e) {
+    e.preventDefault();
+    setIngredients([...ingredients, e.target.name])
+  }
+
+  function addName(e) {
+    setName(e.target.value)
   }
 
   function clearInputs() {
@@ -33,7 +60,7 @@ function OrderForm(props) {
       <button
         key={ingredient}
         name={ingredient}
-        // onClick={(e) => }
+        onClick={(e) => addIngredient(e)}
       >
         {ingredient}
       </button>
@@ -47,14 +74,14 @@ function OrderForm(props) {
         placeholder="Name"
         name="name"
         value={name}
-        // onChange={(e) => }
+        onChange={(e) => addName(e)}
       />
 
       {ingredientButtons}
 
       <p>Order: {ingredients.join(", ") || "Nothing selected"}</p>
 
-      <button onClick={(e) => handleSubmit(e)}>Submit Order</button>
+      <button name="submit order" onClick={(e) => handleSubmit(e)}>Submit Order</button>
     </form>
   );
 }
